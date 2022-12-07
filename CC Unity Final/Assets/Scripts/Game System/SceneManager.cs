@@ -62,7 +62,7 @@ public class SceneManager : MonoBehaviour
         }
 
         // load dialogue resources
-        _dialogueResource = Resources.Load("Dialogue01") as TextAsset;
+        _dialogueResource = Resources.Load("Text/Dialogue01") as TextAsset;
         // split the dialogue texts and save single sentences as an array
         dialogueTexts = _dialogueResource.text.Split('\n');
 
