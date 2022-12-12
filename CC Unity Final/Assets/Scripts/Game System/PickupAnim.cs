@@ -6,6 +6,7 @@ public class PickupAnim : MonoBehaviour
 {
     [SerializeField] float MoveSpeed = 9.0f;
     [SerializeField] float RotateSpeed = 8.0f;
+    [SerializeField] bool DestroyOnPicked = false;
     private bool isMoving;
     private Transform originParent;
     private Vector3 targetPos = Vector3.zero; // target pos is always (0,0,0) of parent carrier
@@ -17,6 +18,10 @@ public class PickupAnim : MonoBehaviour
     void Awake()
     {
         originParent = this.transform.parent; // record the original parent
+
+        // set default preselectedPos & preselectedRot
+        if(preselectedPos.Count <= 0) preselectedPos.Add(this.transform.position);
+        if(preselectedRot.Count <= 0) preselectedRot.Add(this.transform.rotation);
     }
     void Update()
     {
@@ -30,6 +35,8 @@ public class PickupAnim : MonoBehaviour
                 isMoving = false;
                 transform.localPosition = Vector3.zero;
                 transform.localRotation = Quaternion.identity;
+                // destroy the object
+                if(DestroyOnPicked) Destroy(gameObject, 0.2f);
             }
         }
     }

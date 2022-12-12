@@ -17,6 +17,7 @@ public class Highlight : MonoBehaviour
     // get all the materials from each renderer
     private void Awake()
     {
+        renderers.Add(this.GetComponent<MeshRenderer>());
         // get all the materials
         materials = new List<Material>();
         foreach(var renderer in renderers)

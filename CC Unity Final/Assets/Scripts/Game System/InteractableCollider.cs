@@ -14,6 +14,11 @@ public class InteractableCollider : MonoBehaviour
 
     public event EventIntParam PointTriggeredEvent;
     
+    void Awake()
+    {
+        // set default binding object
+        bindingObject = bindingObject ?? this.gameObject;
+    }
     // enable/disable the checkbox
     public void SetActive(bool val)
     {
@@ -45,7 +50,7 @@ public class InteractableCollider : MonoBehaviour
                 bindingObject.GetComponent<Highlight>().ToggleHighlight(val);
             else if(bindingObject?.GetComponent<AppearanceController>())
                 bindingObject.GetComponent<AppearanceController>().ToggleHighlight(val);
-        }      
+        }
     }
 
     // check if pickable
