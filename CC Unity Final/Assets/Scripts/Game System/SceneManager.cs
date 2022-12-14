@@ -175,6 +175,7 @@ public class SceneManager : MonoBehaviour
                 instruction.text = "Catch some water";
                 // trigger activate
                 triggerPoints[3].GetComponent<InteractableCollider>().SetActive(true);
+                triggerPoints[16].GetComponent<InteractableCollider>().SetActive(true);
                 break;
             case 3: // catch some water
                 _audioManager["waterfill"].Play();
@@ -183,6 +184,7 @@ public class SceneManager : MonoBehaviour
                 // change appearance of the cup
                 _dynamicObjects["Cup"].GetComponent<AppearanceController>().ChangeLook("Cup_water");
                 // trigger activate
+                triggerPoints[16].GetComponent<InteractableCollider>().SetActive(false);
                 triggerPoints[4].GetComponent<InteractableCollider>().SetActive(true);
                 triggerPositions[0].SetActive(true);
                 break;
@@ -267,6 +269,12 @@ public class SceneManager : MonoBehaviour
                 _audioManager["alarm"].Play(); // play alarm
                 break;
             case 15: // take the medicine
+                _audioManager["takemedicine"].Play();
+
+                break;
+            case 16: // try to catch water in the kitchen
+                narrator.GetComponent<TitleController>().AddDialogue(dialogueTexts[12]);
+                narrator.GetComponent<TitleController>().AddDialogue(dialogueTexts[13]);
                 break;
         }
     }
