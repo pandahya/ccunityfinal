@@ -7,9 +7,13 @@ using UnityEngine.UI;
 public class SceneManager : MonoBehaviour
 {
     [SerializeField] GameObject Player;
+    GameObject CameraRoot;
+    GameObject MainCamera;
+    [SerializeField] Image BlackMask;
+    [SerializeField] GameObject PostFX;
 
-    public event EventNoParam EnterSceneEvent;
-    public event EventIntParam SwitchSceneEvent;
+    // public event EventNoParam EnterSceneEvent;
+    // public event EventIntParam SwitchSceneEvent;
 
     // Dynamic objects
     Dictionary<string, GameObject> _dynamicObjects;
@@ -43,6 +47,12 @@ public class SceneManager : MonoBehaviour
 
     void Awake()
     {
+        CameraRoot = Player.transform.Find("PlayerCameraRoot").gameObject;
+        MainCamera = CameraRoot.transform.Find("Player Camera").gameObject;
+
+        // add event handlers
+        CameraRoot.GetComponent<CameraAnimation>().OnGetUpEvent += GetUpHandler;
+
         // load all the dynamic objects
         GameObject[] dynamicObjs = GameObject.FindGameObjectsWithTag("Dynamic");
         if(dynamicObjs.Length > 0)
@@ -105,7 +115,8 @@ public class SceneManager : MonoBehaviour
 
     void Start()
     {
-        SceneInitialize();
+        narrator.GetComponent<TitleController>().AddDialogue(dialogueTexts[0]);
+        narrator.GetComponent<TitleController>().AddDialogue(dialogueTexts[1]);
     }
 
     //------------------------Events handlers-------------------------//
@@ -122,14 +133,24 @@ public class SceneManager : MonoBehaviour
         triggerPositions[num].SetActive(false);
         PositionEventHappen(num);
     }
-    //----------------------------------------------------------------//
-    public void SceneInitialize()
+    void GetUpHandler()
     {
+        SetPlayerController(true); // enable player control
+
         _audioManager["getup"].Play();
         narrator.GetComponent<TitleController>().AddDialogue(dialogueTexts[2]);
         instruction.text = "Get the cup";
         // trigger activate
         triggerPoints[2].GetComponent<InteractableCollider>().SetActive(true);
+    }
+    void PassOutHandler()
+    {
+        _audioManager["jumpscare"].Play();
+    }
+    //----------------------------------------------------------------//
+    public void SceneInitialize()
+    {
+        
     }
     public void PointEventHappen(Int32 num)
     {
@@ -164,6 +185,7 @@ public class SceneManager : MonoBehaviour
                 _audioManager["alarm"].Stop();
                 break;
             case 1: // put down alarm clock
+                instruction.text = "Take medicine";
                 // trigger activate
                 triggerPoints[15].GetComponent<InteractableCollider>().SetActive(true);
                 // drop down the alarm clock
@@ -270,19 +292,28 @@ public class SceneManager : MonoBehaviour
                 break;
             case 15: // take the medicine
                 _audioManager["takemedicine"].Play();
+                _audioManager["knock"].Play();
 
+                instruction.text = "";
+                narrator.GetComponent<TitleController>().AddDialogue(dialogueTexts[10]);
+                // trigger activate
+                triggerPoints[17].GetComponent<InteractableCollider>().SetActive(true);
                 break;
             case 16: // try to catch water in the kitchen
                 narrator.GetComponent<TitleController>().AddDialogue(dialogueTexts[12]);
                 narrator.GetComponent<TitleController>().AddDialogue(dialogueTexts[13]);
                 break;
+            case 17: // look out of the front door
+                _audioManager["knock"].Stop();
+
+                SetPlayerController(false); // enable player control
+                // start coroutine
+                StartCoroutine(EndScene());
+                break;
         }
     }
 
-    void PlayAudio(string name)
-    {
 
-    }
     public void PositionEventHappen(Int32 num)
     {
         switch(num)
@@ -304,12 +335,6 @@ public class SceneManager : MonoBehaviour
         }
     }
 
-    // play designated SFX
-    void PlaySFX(String key)
-    {
-
-    }
-
     // enable/disable the player control
     public void SetPlayerController(bool val)
     {
@@ -323,5 +348,82 @@ public class SceneManager : MonoBehaviour
             Player.GetComponent<Movement>().enabled = false;
             Player.GetComponent<MouseLook>().enabled = false;
         }
+    }
+
+    // Scene Ending animations
+    IEnumerator EndScene()
+    {
+        BlackMask.enabled = true; // enable the black mask
+        // fade in
+        BlackMask.color = new Color(0.001f, 0, 0, 0);
+        while(BlackMask.color.a < 1 && BlackMask.color.r == 0.001f)
+        {
+            BlackMask.color = new Color(0.001f, 0, 0, BlackMask.color.a + Time.deltaTime);
+            yield return 0;
+        }
+        BlackMask.color = new Color(0, 0, 0, 1);
+        _audioManager["knock_loud"].Play();
+        // enable postFXs
+        PostFX.GetComponent<PostFX_Manager>().EnableEffects(true);
+        // move camera outdoor
+        MainCamera.transform.position = new Vector3(9.418f, 2.98f, -17.12f);
+        MainCamera.transform.eulerAngles = new Vector3(0, 90, 0);
+        // fade out
+        while(BlackMask.color.a > 0 && BlackMask.color.r == 0)
+        {
+            BlackMask.color = new Color(0, 0, 0, BlackMask.color.a - Time.deltaTime);
+            yield return 0;
+        }
+        BlackMask.enabled = false;
+        narrator.GetComponent<TitleController>().AddDialogue(dialogueTexts[11]);
+
+        // wait for 4 seconds
+        yield return new WaitForSeconds(4.0f);
+
+        BlackMask.enabled = true; // enable the black mask
+        // fade in
+        BlackMask.color = new Color(0.001f, 0, 0, 0);
+        while(BlackMask.color.a < 1 && BlackMask.color.r == 0.001f)
+        {
+            BlackMask.color = new Color(0.001f, 0, 0, BlackMask.color.a + Time.deltaTime);
+            yield return 0;
+        }
+        BlackMask.color = new Color(0, 0, 0, 1);
+        _audioManager["knock_loud"].Stop();
+        // disable postFXs
+        PostFX.GetComponent<PostFX_Manager>().EnableEffects(false);
+        // reset the camera
+        MainCamera.transform.localPosition = Vector3.zero;
+        MainCamera.transform.localEulerAngles = Vector3.zero;
+        // fade out
+        while(BlackMask.color.a > 0 && BlackMask.color.r == 0)
+        {
+            BlackMask.color = new Color(0, 0, 0, BlackMask.color.a - Time.deltaTime);
+            yield return 0;
+        }
+
+        // move the man
+        GameObject Man = GameObject.Find("Man");
+        Man.transform.position = new Vector3(1.96f, 0.51f, -17.07f);
+        Man.transform.eulerAngles = new Vector3(0, -90, 0);
+        // turn back
+        CameraRoot.GetComponent<Animator>().Play("Turn back");
+        yield return new WaitForSeconds(1.8f);
+        _audioManager["jumpscare"].Play();
+        // black out
+        BlackMask.color = new Color(0, 0, 0, 1);
+        Man.SetActive(false);
+        yield return new WaitForSeconds(2.2f);
+        BlackMask.enabled = false;
+
+        _audioManager["creepy"].Play();
+        CameraRoot.GetComponent<CameraAnimation>().OnPassOut();
+        // close eyes
+        CameraRoot.GetComponent<Animator>().Play("Close eyes");
+        // CameraRoot.transform.localPosition = new Vector3(0.48f, -0.66f, 0f);
+        // CameraRoot.transform.localEulerAngles = new Vector3(-20, 180, -48);
+        while( _audioManager["creepy"].isPlaying) yield return 0;
+        Debug.Log("Scene end");
+        yield break;
     }
 }
