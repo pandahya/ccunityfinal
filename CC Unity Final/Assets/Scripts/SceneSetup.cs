@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
 
-public class SceneManager : MonoBehaviour
+public class SceneSetup : MonoBehaviour
 {
     [SerializeField] GameObject Player;
     GameObject CameraRoot;
