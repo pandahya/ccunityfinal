@@ -300,6 +300,7 @@ public class SceneSetup : MonoBehaviour
                 triggerPoints[17].GetComponent<InteractableCollider>().SetActive(true);
                 break;
             case 16: // try to catch water in the kitchen
+                _audioManager["faucetsqueak"].Play();
                 narrator.GetComponent<TitleController>().AddDialogue(dialogueTexts[12]);
                 narrator.GetComponent<TitleController>().AddDialogue(dialogueTexts[13]);
                 break;
