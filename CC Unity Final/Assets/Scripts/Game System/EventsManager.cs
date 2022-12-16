@@ -51,7 +51,7 @@ public class EventsManager : MonoBehaviour
     {
         Debug.Log("Point" + num + " triggered");
         triggerPoints[num].GetComponent<InteractableCollider>().SetActive(false);
-        this.GetComponent<SceneManager>().PointEventHappen(num);
+        this.GetComponent<SceneSetup>().PointEventHappen(num);
     }
 
     void PositionTriggeredHandler(Int32 num)
