@@ -8,6 +8,7 @@ public class PostFX_Manager : MonoBehaviour
     PostProcessVolume m_Volume;
     Vignette m_Vignette;
     LensDistortion m_LensDistortion;
+    DepthOfField m_DepthOfField;
     private void Start()
     {
         m_Volume = GetComponent<PostProcessVolume>();
@@ -15,6 +16,7 @@ public class PostFX_Manager : MonoBehaviour
         // Get postFX profiles
         m_Volume.profile.TryGetSettings(out m_Vignette);
         m_Volume.profile.TryGetSettings(out m_LensDistortion);
+        m_Volume.profile.TryGetSettings(out m_DepthOfField);
         // m_Vignette = ScriptableObject.CreateInstance<Vignette>();
         // m_LensDistortion = ScriptableObject.CreateInstance<LensDistortion>();
     }
@@ -22,6 +24,7 @@ public class PostFX_Manager : MonoBehaviour
     {
         m_Vignette.active = val;
         m_LensDistortion.active = val;
+        m_DepthOfField.active = val;
     }
     // void Update()
     // {

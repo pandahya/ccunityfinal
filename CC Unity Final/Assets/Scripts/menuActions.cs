@@ -12,26 +12,31 @@ public class menuActions : MonoBehaviour
     public GameObject fader;
 
     public float fadeSpeed;
-    bool startPressed; 
+    bool startPressed = true;
+    bool isFadeIn = true;
     float t;
-    Color faderColor;
-
-    void Start()
-    {
-        
-    }
+    Color faderColor = Color.black;
 
     void Update()
     {
         t += Time.deltaTime * fadeSpeed;
         fader.GetComponent<Image>().color = faderColor;
-
+        
         if (startPressed)
         {
             fader.SetActive(true);
-            faderColor = new Color(faderColor.r, faderColor.g, faderColor.b, Mathf.Lerp(faderColor.a, 1, t));
+            if(isFadeIn)
+                faderColor = new Color(faderColor.r, faderColor.g, faderColor.b, Mathf.Lerp(faderColor.a, 0, t));
+            else
+                faderColor = new Color(faderColor.r, faderColor.g, faderColor.b, Mathf.Lerp(faderColor.a, 1, t));
 
-            if (faderColor.a >= .99f)
+            if(faderColor.a <= .01f && isFadeIn)
+            {
+                fader.SetActive(false);
+                startPressed = false;
+                isFadeIn = false;
+            }
+            else if (faderColor.a >= .99f && !isFadeIn)
             {
                 SceneManager.LoadScene("Scene00");
             }
@@ -53,5 +58,6 @@ public class menuActions : MonoBehaviour
     public void ButtonStart()
     {
         startPressed = true;
+        isFadeIn = false;
     }
 }

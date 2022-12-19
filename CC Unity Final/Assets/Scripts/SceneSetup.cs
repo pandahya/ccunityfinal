@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityEngine.SceneManagement;
 
 public class SceneSetup : MonoBehaviour
 {
@@ -10,6 +11,7 @@ public class SceneSetup : MonoBehaviour
     GameObject CameraRoot;
     GameObject MainCamera;
     [SerializeField] Image BlackMask;
+    [SerializeField] FloatingText BottomLine;
     [SerializeField] GameObject PostFX;
 
     // public event EventNoParam EnterSceneEvent;
@@ -49,9 +51,6 @@ public class SceneSetup : MonoBehaviour
     {
         CameraRoot = Player.transform.Find("PlayerCameraRoot").gameObject;
         MainCamera = CameraRoot.transform.Find("Player Camera").gameObject;
-
-        // add event handlers
-        CameraRoot.GetComponent<CameraAnimation>().OnGetUpEvent += GetUpHandler;
 
         // load all the dynamic objects
         GameObject[] dynamicObjs = GameObject.FindGameObjectsWithTag("Dynamic");
@@ -115,8 +114,7 @@ public class SceneSetup : MonoBehaviour
 
     void Start()
     {
-        narrator.GetComponent<TitleController>().AddDialogue(dialogueTexts[0]);
-        narrator.GetComponent<TitleController>().AddDialogue(dialogueTexts[1]);
+        StartCoroutine(EnterScene());
     }
 
     //------------------------Events handlers-------------------------//
@@ -133,25 +131,8 @@ public class SceneSetup : MonoBehaviour
         triggerPositions[num].SetActive(false);
         PositionEventHappen(num);
     }
-    void GetUpHandler()
-    {
-        SetPlayerController(true); // enable player control
 
-        _audioManager["getup"].Play();
-        narrator.GetComponent<TitleController>().AddDialogue(dialogueTexts[2]);
-        instruction.text = "Get the cup";
-        // trigger activate
-        triggerPoints[2].GetComponent<InteractableCollider>().SetActive(true);
-    }
-    void PassOutHandler()
-    {
-        _audioManager["jumpscare"].Play();
-    }
-    //----------------------------------------------------------------//
-    public void SceneInitialize()
-    {
-        
-    }
+    //----------------------------------------------------------------//}
     public void PointEventHappen(Int32 num)
     {
         switch(num)
@@ -306,6 +287,7 @@ public class SceneSetup : MonoBehaviour
                 break;
             case 17: // look out of the front door
                 _audioManager["knock"].Stop();
+                _audioManager["getup"].Play();
 
                 SetPlayerController(false); // enable player control
                 // start coroutine
@@ -349,6 +331,36 @@ public class SceneSetup : MonoBehaviour
             Player.GetComponent<Movement>().enabled = false;
             Player.GetComponent<MouseLook>().enabled = false;
         }
+    }
+    // Scene Beginning animations
+    IEnumerator EnterScene()
+    {
+        BlackMask.enabled = true;
+        yield return new WaitForSeconds(2.0f);
+
+        narrator.GetComponent<TitleController>().AddDialogue(dialogueTexts[0]);
+        yield return new WaitForSeconds(1.0f);
+        BlackMask.enabled = false;
+        // animate - open eyes
+        CameraRoot.GetComponent<Animator>().Play("Open eyes");
+        while(CameraRoot.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).normalizedTime > 1) yield return 0;
+        // wait for animator normalized time return to zero
+        _audioManager["getup"].Play();
+        while(CameraRoot.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).normalizedTime < 1) yield return 0;
+        // wait for animation to finish
+
+        narrator.GetComponent<TitleController>().AddDialogue(dialogueTexts[1]);
+        narrator.GetComponent<TitleController>().AddDialogue(dialogueTexts[2]);
+        _audioManager["clock"].Play();
+        yield return new WaitForSeconds(1.5f);
+        // start playing
+        instruction.text = "Get the cup";
+        triggerPoints[2].GetComponent<InteractableCollider>().SetActive(true); // trigger activate
+        SetPlayerController(true); // enable player control
+        // disable postFXs
+        PostFX.GetComponent<PostFX_Manager>().EnableEffects(false);
+
+        yield break;
     }
 
     // Scene Ending animations
@@ -407,24 +419,37 @@ public class SceneSetup : MonoBehaviour
         GameObject Man = GameObject.Find("Man");
         Man.transform.position = new Vector3(1.96f, 0.51f, -17.07f);
         Man.transform.eulerAngles = new Vector3(0, -90, 0);
-        // turn back
+        // animate - turn back
         CameraRoot.GetComponent<Animator>().Play("Turn back");
-        yield return new WaitForSeconds(1.8f);
+        while(CameraRoot.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).normalizedTime > 1) yield return 0;
+        // wait for animator normalized time return to zero
+        while(CameraRoot.GetComponent<Animator>().GetCurrentAnimatorStateInfo(0).normalizedTime < 1) yield return 0;
         _audioManager["jumpscare"].Play();
+        yield return new WaitForSeconds(0.5f);
+
         // black out
         BlackMask.color = new Color(0, 0, 0, 1);
         Man.SetActive(false);
         yield return new WaitForSeconds(2.2f);
+
         BlackMask.enabled = false;
 
         _audioManager["creepy"].Play();
         CameraRoot.GetComponent<CameraAnimation>().OnPassOut();
-        // close eyes
+        // animate - close eyes
         CameraRoot.GetComponent<Animator>().Play("Close eyes");
         // CameraRoot.transform.localPosition = new Vector3(0.48f, -0.66f, 0f);
         // CameraRoot.transform.localEulerAngles = new Vector3(-20, 180, -48);
         while( _audioManager["creepy"].isPlaying) yield return 0;
+        yield return new WaitForSeconds(2.2f);
+
+        BottomLine.CreateFloatingText("To Be Continued ...");
+        while(BottomLine.GetState() == "Dormant") yield return 0;
+        while(BottomLine.GetState() != "Dormant") yield return 0;
+
+        // scene end here
         Debug.Log("Scene end");
+        SceneManager.LoadScene("Menu"); // back to menu scene
         yield break;
     }
 }
