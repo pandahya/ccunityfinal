@@ -17,6 +17,10 @@ public class menuActions : MonoBehaviour
     float t;
     Color faderColor = Color.black;
 
+    void Start()
+    {
+        Cursor.lockState = CursorLockMode.None;
+    }
     void Update()
     {
         t += Time.deltaTime * fadeSpeed;

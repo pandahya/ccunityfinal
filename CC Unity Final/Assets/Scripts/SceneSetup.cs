@@ -275,7 +275,7 @@ public class SceneSetup : MonoBehaviour
                 _audioManager["takemedicine"].Play();
                 _audioManager["knock"].Play();
 
-                instruction.text = "";
+                instruction.text = "Check the front door";
                 narrator.GetComponent<TitleController>().AddDialogue(dialogueTexts[10]);
                 // trigger activate
                 triggerPoints[17].GetComponent<InteractableCollider>().SetActive(true);
@@ -288,6 +288,7 @@ public class SceneSetup : MonoBehaviour
             case 17: // look out of the front door
                 _audioManager["knock"].Stop();
                 _audioManager["getup"].Play();
+                instruction.text = "";
 
                 SetPlayerController(false); // enable player control
                 // start coroutine
